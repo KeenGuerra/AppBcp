@@ -194,7 +194,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
 
                               // Dynamic Fields based on tab
                               SizedBox(
-                                height: 80,
+                                height: 100,
                                 child: TabBarView(
                                   controller: _tabController,
                                   physics: const NeverScrollableScrollPhysics(),
@@ -387,7 +387,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                               const SizedBox(height: 20),
 
                               Text(
-                                'Demo: Cliente=40118120, Asesor=A001, Sup=SUP001, Admin=ADM001 / Clave=123456',
+                                'Demo: Cliente=41884031, Asesor=A001, Sup=SUP001, Admin=ADM001 / Clave=123456',
                                 style: TextStyle(fontSize: 10, color: Colors.grey.shade400),
                                 textAlign: TextAlign.center,
                               ),

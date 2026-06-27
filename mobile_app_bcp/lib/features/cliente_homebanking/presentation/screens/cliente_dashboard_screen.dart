@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app_bcp/core/config/app_constants.dart';
 import 'package:mobile_app_bcp/core/utils/money_formatter.dart';
-import 'package:mobile_app_bcp/core/utils/date_formatter.dart';
 import 'package:mobile_app_bcp/core/network/dio_client.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile_app_bcp/features/auth/presentation/providers/auth_provider.dart';
@@ -51,7 +50,6 @@ class _ClienteDashboardScreenState extends ConsumerState<ClienteDashboardScreen>
   List<Map<String, dynamic>> _transferenciasProgramadas = [];
   List<Map<String, dynamic>> _gastosPersonales = [];
   List<Map<String, dynamic>> _comprobantes = [];
-  List<Map<String, dynamic>> _simulaciones = [];
   List<Map<String, dynamic>> _retirosProgramados = [];
   List<Map<String, dynamic>> _reglasAhorroAutomatico = [];
 
@@ -138,9 +136,6 @@ class _ClienteDashboardScreenState extends ConsumerState<ClienteDashboardScreen>
         _comprobantes = [
           {'id': 'c1', 'tipo': 'TRANSFERENCIA', 'monto': 350.0, 'referencia_uuid': 'uuid-982-12-3a', 'fecha': '2026-06-20'},
           {'id': 'c2', 'tipo': 'PAGO_LUZ', 'monto': 120.0, 'referencia_uuid': 'uuid-128-44-bc', 'fecha': '2026-06-22'}
-        ];
-        _simulaciones = [
-          {'id': 's1', 'monto': 5000.0, 'plazo': 12, 'cuota_calculada': 490.5, 'tea': 38.4, 'fecha': '2026-06-24'}
         ];
         _retirosProgramados = [
           {'id': 'rp1', 'monto': 500.0, 'fecha_programada': '2026-07-01', 'motivo': 'Alquiler', 'estado': 'PENDIENTE'}

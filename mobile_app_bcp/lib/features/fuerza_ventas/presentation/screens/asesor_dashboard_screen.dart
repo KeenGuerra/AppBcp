@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mobile_app_bcp/core/config/app_constants.dart';
 import 'package:mobile_app_bcp/core/network/dio_client.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile_app_bcp/core/network/connectivity_service.dart';
@@ -53,7 +52,6 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
   int _currentStep = 0;
   String? _stepperClientId;
   String? _stepperNegocioId;
-  String? _stepperProdId;
   String? _stepperSolId;
   final _stepperMontoController = TextEditingController(text: '5000');
   final _stepperPlazoController = TextEditingController(text: '12');
@@ -64,16 +62,10 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
   final _stepperExpenseController = TextEditingController(text: '1500');
   final _stepperDestinoController = TextEditingController(text: 'Compra de mercadería');
   String _stepperEstadoCivil = 'SOLTERO';
-  String _stepperGarantia = 'SIN_GARANTIA';
-  String _stepperMoneda = 'PEN';
-  bool _stepperDesgravamen = true;
   String? _evalResultado;
   int? _evalPuntaje;
   double? _evalCuota;
-  String? _buroCalificacion;
-  String? _buroResultado;
   bool _dniUploaded = false;
-  bool _businessPhotoUploaded = false;
   final SignatureController _sigController = SignatureController(
     penStrokeWidth: 4,
     penColor: Colors.black,
@@ -1266,15 +1258,11 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
         _currentStep = 0;
         _stepperClientId = null;
         _stepperNegocioId = null;
-        _stepperProdId = null;
         _stepperSolId = null;
         _evalResultado = null;
         _evalPuntaje = null;
         _evalCuota = null;
-        _buroResultado = null;
-        _buroCalificacion = null;
         _dniUploaded = false;
-        _businessPhotoUploaded = false;
         _sigController.clear();
         
         _stepperNameController.clear();
@@ -1366,8 +1354,6 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
           onUsePreapprovedOffer: (monto, plazo) {
             _stepperMontoController.text = monto.round().toString();
             _stepperPlazoController.text = plazo.toString();
-            _stepperGarantia = 'SIN_GARANTIA';
-            _stepperDesgravamen = true;
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('¡Oferta cargada en el Stepper de Originación!'), behavior: SnackBarBehavior.floating),
             );
@@ -1386,7 +1372,6 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
               _stepperClientId = clientId;
               _selectedIdCartera = null;
               _stepperNegocioId = 'b0000000-0000-0000-0000-000000000001';
-              _stepperProdId = 'f0000000-0000-0000-0000-000000000001';
               _stepperMontoController.text = montoOferta.round().toString();
               _selectedMenuIndex = 4; 
             });

@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import '../../core/network/dio_client.dart';
 
 class ApiRepository {
-  final Dio _dio = DioClient.instance.dio;
+  final Dio _dio = DioClient.instance;
 
   // Auth
   Future<Map<String, dynamic>> login(String documento, String password) async {

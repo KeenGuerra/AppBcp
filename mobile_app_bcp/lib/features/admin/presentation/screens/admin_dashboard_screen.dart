@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile_app_bcp/core/config/app_constants.dart';
-import 'package:mobile_app_bcp/core/utils/money_formatter.dart';
 import 'package:mobile_app_bcp/core/utils/date_formatter.dart';
 import 'package:mobile_app_bcp/core/network/dio_client.dart';
 import 'package:dio/dio.dart';

@@ -20,7 +20,6 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
   int _currentIndex = 0;
   bool _isLoading = false;
 
-  // Data Cache
   List<dynamic> _solicitudes = [];
   List<dynamic> _desempenoAsesores = [];
   Map<String, dynamic> _resumenEstados = {};
@@ -32,37 +31,36 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
   }
 
   Future<void> _fetchData() async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       final resSols = await DioClient.instance.get('/comite/solicitudes');
-      _solicitudes = resSols.data;
+      if (!mounted) return;
+      _solicitudes = resSols.data is List ? List.from(resSols.data) : [];
 
-      // Group totals for dashboard report
       _resumenEstados.clear();
       for (var s in _solicitudes) {
         final est = s['estado'];
         _resumenEstados[est] = (_resumenEstados[est] ?? 0) + 1;
       }
 
-      // Fetch advisor rankings
-      final resSync = await DioClient.instance.post('/sync/procesar'); // Auto process outbox to stay clean
-      
-      // Let's create dummy advisor reports for mockup reports
+      try {
+        await DioClient.instance.post('/sync/procesar');
+      } catch (_) {}
+
       _desempenoAsesores = [
         {"nombre": "Roberto Gomez (A001)", "solicitudes": 15, "monto": 25000.0},
         {"nombre": "Maria Sanches (A002)", "solicitudes": 10, "monto": 18000.0},
         {"nombre": "Carlos Torres (A003)", "solicitudes": 5, "monto": 9000.0},
       ];
-
     } catch (e) {
+      if (!mounted) return;
       if (e is DioException && (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
+        if (mounted) context.go('/login');
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al obtener datos de comite: $e')),
-      );
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -74,7 +72,7 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authProvider, (previous, next) {
-      if (next.token == null) {
+      if (next.token == null && mounted) {
         context.go('/login');
       }
     });
@@ -116,9 +114,21 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
     }
   }
 
-  // TAB 1: Bandeja Comité (ENVIADO, RECIBIDO_COMITE, EN_EVALUACION)
   Widget _buildComiteBandeja() {
     final list = _solicitudes.where((s) => ['ENVIADO', 'RECIBIDO_COMITE', 'EN_EVALUACION'].contains(s['estado'])).toList();
+
+    if (list.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inbox, size: 64, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            Text('No hay solicitudes en comité', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+          ],
+        ),
+      );
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -128,12 +138,26 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
         final cli = s['cliente'];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            title: Text('${cli?['nombres'] ?? "Cliente"} - ${s['numero_expediente']}'),
-            subtitle: Text('Monto: S/ ${s['monto_solicitado']} | Pre-Eval: ${s['resultado_preevaluacion'] ?? "Pendiente"}'),
-            trailing: ElevatedButton(
-              onPressed: () => _viewSolicitudComite(s),
-              child: const Text('Evaluar'),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${cli?['nombres'] ?? "Cliente"} ${cli?['apellidos'] ?? ""} - ${s['numero_expediente'] ?? ""}',
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                const SizedBox(height: 4),
+                Text('Monto: S/ ${s['monto_solicitado']} | Pre-Eval: ${s['resultado_preevaluacion'] ?? "Pendiente"}'),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: () => _viewSolicitudComite(s),
+                    child: const Text('Evaluar'),
+                  ),
+                ),
+              ],
             ),
           ),
         );
@@ -155,22 +179,22 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text('Cliente y Negocio', style: TextStyle(fontWeight: FontWeight.bold, color: AppConstants.primaryBlue)),
-                Text('Nombre: ${cli?['nombres']} ${cli?['apellidos']}'),
-                Text('DNI: ${cli?['documento']}'),
-                Text('Negocio Comercial: ${neg?['nombre_comercial']}'),
-                Text('Ingresos Mensuales: S/ ${neg?['ingreso_mensual']}'),
-                Text('Gastos Mensuales: S/ ${neg?['gasto_mensual']}'),
+                Text('Nombre: ${cli?['nombres'] ?? ''} ${cli?['apellidos'] ?? ''}'),
+                Text('DNI: ${cli?['documento'] ?? ''}'),
+                Text('Negocio Comercial: ${neg?['nombre_comercial'] ?? ''}'),
+                Text('Ingresos Mensuales: S/ ${neg?['ingreso_mensual'] ?? 0}'),
+                Text('Gastos Mensuales: S/ ${neg?['gasto_mensual'] ?? 0}'),
                 const Divider(),
                 const Text('Evaluaciones Realizadas', style: TextStyle(fontWeight: FontWeight.bold, color: AppConstants.primaryBlue)),
-                Text('Preevaluación: ${s['resultado_preevaluacion']} (${s['puntaje_preevaluacion']} ptos)'),
+                Text('Preevaluación: ${s['resultado_preevaluacion'] ?? "N/A"} (${s['puntaje_preevaluacion'] ?? 0} ptos)'),
                 Text('Buró Crediticio: ${s['resultado_buro'] ?? "NORMAL"}'),
-                Text('Garantía: ${s['garantia']}'),
+                Text('Garantía: ${s['garantia'] ?? "N/A"}'),
                 const Divider(),
                 Text('Monto Solicitado: S/ ${s['monto_solicitado']}'),
                 Text('Plazo Solicitado: ${s['plazo_meses']} meses'),
                 const SizedBox(height: 16),
-                const Text('Firmado por el Cliente:'),
-                if (s['firma_cliente_base64'] != null)
+                const Text('Firma del Cliente:'),
+                if (s['firma_cliente_base64'] != null && (s['firma_cliente_base64'] as String).isNotEmpty)
                   Container(
                     height: 80,
                     width: double.infinity,
@@ -206,19 +230,16 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
 
   void _recibirComite(String idSol, BuildContext dialogCtx) async {
     Navigator.pop(dialogCtx);
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       await DioClient.instance.post('/comite/solicitudes/$idSol/recibir');
       await DioClient.instance.post('/comite/solicitudes/$idSol/evaluar');
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Expediente recibido y puesto en evaluación')));
       _fetchData();
     } catch (e) {
-      if (e is DioException && (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+      debugPrint('Error recibir comite: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -244,21 +265,18 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
+              if (!mounted) return;
               setState(() => _isLoading = true);
               try {
                 await DioClient.instance.post('/comite/solicitudes/$idSol/aprobar', data: {
                   'monto_aprobado': double.tryParse(montoController.text) ?? 0.0,
                   'condicion_adicional': condController.text
                 });
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('¡Expediente de crédito Aprobado!')));
                 _fetchData();
               } catch (e) {
-                if (e is DioException && (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
-                  return;
-                }
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al aprobar: $e')));
+                debugPrint('Error aprobar: $e');
               } finally {
-                setState(() => _isLoading = false);
+                if (mounted) setState(() => _isLoading = false);
               }
             },
             child: const Text('Confirmar Aprobación'),
@@ -283,20 +301,17 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
             onPressed: () async {
               if (motController.text.trim().isEmpty) return;
               Navigator.pop(ctx);
+              if (!mounted) return;
               setState(() => _isLoading = true);
               try {
                 await DioClient.instance.post('/comite/solicitudes/$idSol/rechazar', data: {
                   'motivo_rechazo': motController.text
                 });
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Expediente de crédito Rechazado')));
                 _fetchData();
               } catch (e) {
-                if (e is DioException && (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
-                  return;
-                }
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al rechazar: $e')));
+                debugPrint('Error rechazar: $e');
               } finally {
-                setState(() => _isLoading = false);
+                if (mounted) setState(() => _isLoading = false);
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppConstants.errorRed),
@@ -307,9 +322,21 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
     );
   }
 
-  // TAB 2: Desembolsos (APROBADO)
   Widget _buildDesembolsosBandeja() {
     final list = _solicitudes.where((s) => s['estado'] == 'APROBADO').toList();
+
+    if (list.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.check_circle_outline, size: 64, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            Text('No hay créditos aprobados para desembolsar', style: TextStyle(fontSize: 16, color: Colors.grey.shade600)),
+          ],
+        ),
+      );
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -319,14 +346,35 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
         final cli = s['cliente'];
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: const Icon(Icons.check_circle, color: AppConstants.exitoGreen),
-            title: Text('${cli?['nombres'] ?? "Cliente"} - ${s['numero_expediente']}'),
-            subtitle: Text('Aprobado por S/ ${s['monto_aprobado'] ?? s['monto_solicitado']}'),
-            trailing: ElevatedButton(
-              onPressed: () => _desembolsarCredito(s['id_solicitud']),
-              style: ElevatedButton.styleFrom(backgroundColor: AppConstants.orangeAcento),
-              child: const Text('Desembolsar'),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: AppConstants.exitoGreen),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${cli?['nombres'] ?? "Cliente"} ${cli?['apellidos'] ?? ""} - ${s['numero_expediente'] ?? ""}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text('Aprobado por S/ ${s['monto_aprobado'] ?? s['monto_solicitado']}'),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    onPressed: () => _desembolsarCredito(s['id_solicitud']),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppConstants.orangeAcento),
+                    child: const Text('Desembolsar'),
+                  ),
+                ),
+              ],
             ),
           ),
         );
@@ -335,24 +383,18 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
   }
 
   void _desembolsarCredito(String idSol) async {
+    if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       await DioClient.instance.post('/comite/solicitudes/$idSol/desembolsar');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Crédito Desembolsado! Fondos acreditados al cliente y notificaciones emitidas.')),
-      );
       _fetchData();
     } catch (e) {
-      if (e is DioException && (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al desembolsar: $e')));
+      debugPrint('Error desembolsar: $e');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  // TAB 3: Monitoreo y Rankings
   Widget _buildMonitoreoReportes() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),

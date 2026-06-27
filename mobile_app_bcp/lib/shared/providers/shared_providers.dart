@@ -4,7 +4,6 @@ import '../repositories/api_repository.dart';
 import '../models/cliente_model.dart';
 import '../models/cuenta_model.dart';
 import '../models/credito_model.dart';
-import '../models/cronograma_model.dart';
 import '../models/movimiento_model.dart';
 import '../models/solicitud_model.dart';
 import '../models/notificacion_model.dart';

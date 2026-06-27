@@ -1,6 +1,5 @@
 // features/admin/presentation/screens/productos_screen.dart
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -25,7 +24,7 @@ class _ProductosScreenState extends State<ProductosScreen> {
   Future<void> _fetchProductos() async {
     setState(() => _loading = true);
     try {
-      final response = await DioClient.instance.dio.get('/admin/productos-creditos');
+      final response = await DioClient.instance.get('/admin/productos-creditos');
       setState(() => _productos = response.data);
     } catch (e) {
       // Handle error

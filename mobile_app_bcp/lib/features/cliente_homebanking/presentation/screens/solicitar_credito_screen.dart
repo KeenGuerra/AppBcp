@@ -1,4 +1,5 @@
 // features/cliente_homebanking/presentation/screens/solicitar_credito_screen.dart
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/providers/shared_providers.dart';
@@ -142,7 +143,7 @@ class _SolicitarCreditoScreenState extends ConsumerState<SolicitarCreditoScreen>
     if (monto == 0) return 'S/ 0.00';
     final tea = 0.4092;
     final tem = (1 + tea) / 12 - 1;
-    final cuota = monto * tem / (1 - (1 + tem).pow(-plazo));
+    final cuota = monto * tem / (1 - 1 / pow(1 + tem, plazo));
     return 'S/ ${cuota.toStringAsFixed(2)}';
   }
 

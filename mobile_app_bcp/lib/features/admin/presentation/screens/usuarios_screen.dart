@@ -1,6 +1,5 @@
 // features/admin/presentation/screens/usuarios_screen.dart
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import '../../../../core/network/dio_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
@@ -25,7 +24,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   Future<void> _fetchUsuarios() async {
     setState(() => _loading = true);
     try {
-      final response = await DioClient.instance.dio.get('/admin/usuarios');
+      final response = await DioClient.instance.get('/admin/usuarios');
       setState(() => _usuarios = response.data);
     } catch (e) {
       // Handle error

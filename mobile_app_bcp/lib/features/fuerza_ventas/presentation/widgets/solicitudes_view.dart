@@ -115,7 +115,6 @@ class _SolicitudesViewState extends State<SolicitudesView> {
     final total = widget.solicitudes.length;
     final aprobados = widget.solicitudes.where((s) => ['APROBADO', 'DESEMBOLSADO'].contains(s['estado'])).length;
     final enComite = widget.solicitudes.where((s) => ['ENVIADO', 'RECIBIDO_COMITE'].contains(s['estado'])).length;
-    final pendientes = total - aprobados - enComite - widget.solicitudes.where((s) => s['estado'] == 'RECHAZADO').length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

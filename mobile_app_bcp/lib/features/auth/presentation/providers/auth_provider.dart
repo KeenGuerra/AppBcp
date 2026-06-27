@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile_app_bcp/core/network/dio_client.dart';
 import 'package:mobile_app_bcp/core/storage/secure_storage_service.dart';
-import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthState {

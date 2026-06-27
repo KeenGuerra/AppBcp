@@ -6,13 +6,23 @@ import '../../../../shared/models/cronograma_model.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
+final cronogramaFutureProvider = FutureProvider.family<List<CronogramaModel>, String>((ref, idCredito) async {
+  final repo = ref.read(apiRepositoryProvider);
+  try {
+    final data = await repo.getCronograma(idCredito);
+    return data.map((c) => CronogramaModel.fromJson(c)).toList();
+  } catch (e) {
+    return [];
+  }
+});
+
 class CronogramaScreen extends ConsumerWidget {
   final String idCredito;
   const CronogramaScreen({super.key, required this.idCredito});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cronogramaAsync = ref.watch(cronogramaProvider);
+    final cronogramaAsync = ref.watch(cronogramaFutureProvider(idCredito));
 
     return Scaffold(
       appBar: AppBar(

@@ -47,10 +47,17 @@ class MisSolicitudesScreen extends ConsumerWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => SolicitudDetalleScreen(solicitud: sol.toJson()),
+                        builder: (_) => SolicitudDetalleScreen(solicitud: {
+                          'id_solicitud': sol.idSolicitud,
+                          'numero_expediente': sol.numeroExpediente,
+                          'monto_solicitado': sol.montoSolicitado,
+                          'plazo_meses': sol.plazoMeses,
+                          'estado': sol.estado,
+                          'cliente_nombre': sol.canalOrigen,
+                        }),
                       ),
                     );
-                  ),
+                  },
                   leading: CircleAvatar(
                     backgroundColor: colorEstado.withOpacity(0.1),
                     child: Icon(Icons.description, color: colorEstado),

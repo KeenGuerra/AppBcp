@@ -1,17 +1,13 @@
 // features/cliente_homebanking/presentation/screens/tarjetas_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../shared/providers/shared_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 
-class TarjetasScreen extends ConsumerWidget {
+class TarjetasScreen extends StatelessWidget {
   const TarjetasScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final cuentasAsync = ref.watch(cuentasProvider);
-
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis Tarjetas'),
