@@ -194,12 +194,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
 
                               // Dynamic Fields based on tab
                               SizedBox(
-                                height: 120,
+                                height: 140,
                                 child: TabBarView(
                                   controller: _tabController,
                                   physics: const NeverScrollableScrollPhysics(),
                                   children: [
-                                    TextFormField(
+                                    Align(
+                                      alignment: Alignment.topCenter,
+                                      child: TextFormField(
                                       controller: _dniController,
                                       decoration: InputDecoration(
                                         labelText: 'DNI / Documento',
@@ -224,6 +226,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                                       ),
                                       keyboardType: TextInputType.number,
                                       validator: Validators.validateDni,
+                                      ),
                                     ),
                                     TextFormField(
                                       controller: _codeController,
