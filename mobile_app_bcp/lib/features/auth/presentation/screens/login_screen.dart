@@ -194,7 +194,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
 
                               // Dynamic Fields based on tab
                               SizedBox(
-                                height: 100,
+                                height: 120,
                                 child: TabBarView(
                                   controller: _tabController,
                                   physics: const NeverScrollableScrollPhysics(),
@@ -203,7 +203,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                                       controller: _dniController,
                                       decoration: InputDecoration(
                                         labelText: 'DNI / Documento',
-                                        labelStyle: const TextStyle(color: ClienteTheme.bcpTextGrey),
+                                        labelStyle: const TextStyle(color: ClienteTheme.bcpTextGrey, fontSize: 15),
                                         prefixIcon: const Icon(Icons.badge, color: ClienteTheme.bcpBlue),
                                         focusedBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
@@ -229,7 +229,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                                       controller: _codeController,
                                       decoration: InputDecoration(
                                         labelText: 'Código de Empleado',
-                                        labelStyle: const TextStyle(color: ClienteTheme.bcpTextGrey),
+                                        labelStyle: const TextStyle(color: ClienteTheme.bcpTextGrey, fontSize: 15),
                                         prefixIcon: const Icon(Icons.work, color: ClienteTheme.bcpBlue),
                                         focusedBorder: OutlineInputBorder(
                                           borderRadius: BorderRadius.circular(12),
