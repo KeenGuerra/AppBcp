@@ -24,11 +24,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
   final _passwordController = TextEditingController(text: '123456');
 
   bool _obscurePassword = true;
+  int _selectedIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {
+          _selectedIndex = _tabController.index;
+        });
+      }
+    });
   }
 
   @override
@@ -193,70 +201,61 @@ class _LoginScreenState extends ConsumerState<LoginScreen> with SingleTickerProv
                               const SizedBox(height: 24),
 
                               // Dynamic Fields based on tab
-                              SizedBox(
-                                height: 140,
-                                child: TabBarView(
-                                  controller: _tabController,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.topCenter,
-                                      child: TextFormField(
-                                      controller: _dniController,
-                                      decoration: InputDecoration(
-                                        labelText: 'DNI / Documento',
-                                        labelStyle: const TextStyle(color: ClienteTheme.bcpTextGrey, fontSize: 15),
-                                        prefixIcon: const Icon(Icons.badge, color: ClienteTheme.bcpBlue),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: const BorderSide(color: ClienteTheme.bcpBlue, width: 2),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                        errorBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: const BorderSide(color: AppConstants.errorRed),
-                                        ),
-                                        focusedErrorBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: const BorderSide(color: AppConstants.errorRed, width: 2),
-                                        ),
-                                      ),
-                                      keyboardType: TextInputType.number,
-                                      validator: Validators.validateDni,
-                                      ),
+                              if (_selectedIndex == 0) ...[
+                                TextFormField(
+                                  controller: _dniController,
+                                  decoration: InputDecoration(
+                                    labelText: 'DNI / Documento',
+                                    labelStyle: const TextStyle(color: ClienteTheme.bcpTextGrey, fontSize: 15),
+                                    prefixIcon: const Icon(Icons.badge, color: ClienteTheme.bcpBlue),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: ClienteTheme.bcpBlue, width: 2),
                                     ),
-                                    TextFormField(
-                                      controller: _codeController,
-                                      decoration: InputDecoration(
-                                        labelText: 'Código de Empleado',
-                                        labelStyle: const TextStyle(color: ClienteTheme.bcpTextGrey, fontSize: 15),
-                                        prefixIcon: const Icon(Icons.work, color: ClienteTheme.bcpBlue),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: const BorderSide(color: ClienteTheme.bcpBlue, width: 2),
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide(color: Colors.grey.shade300),
-                                        ),
-                                        errorBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: const BorderSide(color: AppConstants.errorRed),
-                                        ),
-                                        focusedErrorBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: const BorderSide(color: AppConstants.errorRed, width: 2),
-                                        ),
-                                      ),
-                                      keyboardType: TextInputType.text,
-                                      validator: Validators.validateCodigoEmpleado,
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.grey.shade300),
                                     ),
-                                  ],
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppConstants.errorRed),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppConstants.errorRed, width: 2),
+                                    ),
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                  validator: Validators.validateDni,
                                 ),
-                              ),
+                              ] else ...[
+                                TextFormField(
+                                  controller: _codeController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Código de Empleado',
+                                    labelStyle: const TextStyle(color: ClienteTheme.bcpTextGrey, fontSize: 15),
+                                    prefixIcon: const Icon(Icons.work, color: ClienteTheme.bcpBlue),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: ClienteTheme.bcpBlue, width: 2),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.grey.shade300),
+                                    ),
+                                    errorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppConstants.errorRed),
+                                    ),
+                                    focusedErrorBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: AppConstants.errorRed, width: 2),
+                                    ),
+                                  ),
+                                  keyboardType: TextInputType.text,
+                                  validator: Validators.validateCodigoEmpleado,
+                                ),
+                              ],
                               const SizedBox(height: 12),
 
                               // Password Field
