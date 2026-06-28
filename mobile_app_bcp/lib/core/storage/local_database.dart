@@ -198,7 +198,19 @@ class MockWebDatabase {
       return list.where((row) => row['id_borrador'] == id).toList();
     }
     
-    return list;
+    if (orderBy != null) {
+      final parts = orderBy.split(' ');
+      final key = parts[0];
+      final desc = parts.length > 1 && parts[1].toUpperCase() == 'DESC';
+      list.sort((a, b) {
+        final aVal = a[key] ?? '';
+        final bVal = b[key] ?? '';
+        final cmp = aVal.toString().compareTo(bVal.toString());
+        return desc ? -cmp : cmp;
+      });
+    }
+
+    return List<Map<String, dynamic>>.from(list);
   }
 
   Future<int> insert(
