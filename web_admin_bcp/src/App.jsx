@@ -44,7 +44,7 @@ const NAV_SECTION2 = [
   { id: 'sync',       label: 'Sync & Logs',    icon: 'sync_alt' },
 ];
 
-const api = axios.create({ baseURL: 'http://127.0.0.1:8003' });
+const api = axios.create({ baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8003' });
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('admin_token') || null);

@@ -36,7 +36,7 @@ app.add_middleware(
 )
 
 # Mount local upload directory for document files
-uploads_dir = "d:/appbcp/backend_core_mobile/uploads"
+uploads_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "uploads")
 os.makedirs(uploads_dir, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=uploads_dir), name="uploads")
 

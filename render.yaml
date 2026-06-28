@@ -1,0 +1,45 @@
+services:
+  # Backend: FastAPI Web Service
+  - type: web
+    name: bcp-mobile-core-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    rootDir: backend_core_mobile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: JWT_ALGORITHM
+        value: HS256
+      - key: JWT_EXPIRE_MINUTES
+        value: "480"
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: SUPABASE_URL
+        value: https://kawalgwszhtclarijjqg.supabase.co
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false # Set manually in Render dashboard
+      - key: SUPABASE_STORAGE_BUCKET
+        value: documentos-creditos
+      - key: DEFAULT_ADMIN_PASSWORD
+        value: "123456"
+
+  # Frontend: React Static Site (Web Admin)
+  - type: web
+    name: bcp-mobile-core-webadmin
+    runtime: static
+    buildCommand: cd web_admin_bcp && npm install && npm run build
+    staticPublishPath: ./web_admin_bcp/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false # Set to your backend URL, e.g. https://bcp-mobile-core-backend.onrender.com
