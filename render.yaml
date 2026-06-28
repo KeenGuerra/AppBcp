@@ -24,7 +24,7 @@ services:
       - key: SUPABASE_URL
         value: https://kawalgwszhtclarijjqg.supabase.co
       - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false # Set manually in Render dashboard
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imthd2FsZ3dzemh0Y2xhcmlqanFnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MjMyODE1NCwiZXhwIjoyMDk3OTA0MTU0fQ.1ta94yN8xPkLCXNg0iRrjjY8wUFp0iQE7e8rPvp61NU
       - key: SUPABASE_STORAGE_BUCKET
         value: documentos-creditos
       - key: DEFAULT_ADMIN_PASSWORD
@@ -42,4 +42,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        sync: false # Set to your backend URL, e.g. https://bcp-mobile-core-backend.onrender.com
+        value: https://bcp-mobile-core-backend.onrender.com
