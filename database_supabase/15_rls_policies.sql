@@ -3,6 +3,72 @@
 -- Estas políticas son para protección adicional si se accede directamente desde el cliente.
 
 -- ============================================================
+-- ELIMINAR POLÍTICAS EXISTENTES (idempotente)
+-- ============================================================
+
+-- SERVICE_ROLE
+DROP POLICY IF EXISTS "service_role_all_usuarios" ON usuarios;
+DROP POLICY IF EXISTS "service_role_all_agencias" ON agencias;
+DROP POLICY IF EXISTS "service_role_all_clientes" ON clientes;
+DROP POLICY IF EXISTS "service_role_all_negocios" ON negocios_cliente;
+DROP POLICY IF EXISTS "service_role_all_asesores" ON asesores;
+DROP POLICY IF EXISTS "service_role_all_productos" ON productos_credito;
+DROP POLICY IF EXISTS "service_role_all_cuentas" ON cuentas_ahorro;
+DROP POLICY IF EXISTS "service_role_all_tarjetas" ON tarjetas;
+DROP POLICY IF EXISTS "service_role_all_solicitudes" ON solicitudes_credito;
+DROP POLICY IF EXISTS "service_role_all_cartera" ON cartera_diaria;
+DROP POLICY IF EXISTS "service_role_all_visitas" ON visitas_cliente;
+DROP POLICY IF EXISTS "service_role_all_buro" ON consultas_buro;
+DROP POLICY IF EXISTS "service_role_all_inhabilitados" ON listas_inhabilitados;
+DROP POLICY IF EXISTS "service_role_all_documentos" ON solicitudes_documentos;
+DROP POLICY IF EXISTS "service_role_all_creditos" ON cr_creditos;
+DROP POLICY IF EXISTS "service_role_all_cronograma" ON cr_cronograma_pagos;
+DROP POLICY IF EXISTS "service_role_all_movimientos" ON cr_movimientos;
+DROP POLICY IF EXISTS "service_role_all_operaciones" ON operaciones_cliente;
+DROP POLICY IF EXISTS "service_role_all_notificaciones" ON notificaciones;
+DROP POLICY IF EXISTS "service_role_all_outbox" ON sync_outbox;
+DROP POLICY IF EXISTS "service_role_all_synclog" ON sync_log;
+DROP POLICY IF EXISTS "service_role_all_auditoria" ON auditoria_eventos;
+
+-- ANON
+DROP POLICY IF EXISTS "anon_read_agencias" ON agencias;
+DROP POLICY IF EXISTS "anon_read_productos" ON productos_credito;
+DROP POLICY IF EXISTS "anon_read_inhabilitados" ON listas_inhabilitados;
+
+-- CLIENTE
+DROP POLICY IF EXISTS "cliente_select_own" ON clientes;
+DROP POLICY IF EXISTS "cliente_select_own_cuentas" ON cuentas_ahorro;
+DROP POLICY IF EXISTS "cliente_select_own_tarjetas" ON tarjetas;
+DROP POLICY IF EXISTS "cliente_select_own_solicitudes" ON solicitudes_credito;
+DROP POLICY IF EXISTS "cliente_insert_own_solicitudes" ON solicitudes_credito;
+DROP POLICY IF EXISTS "cliente_select_own_creditos" ON cr_creditos;
+DROP POLICY IF EXISTS "cliente_select_own_cronograma" ON cr_cronograma_pagos;
+DROP POLICY IF EXISTS "cliente_select_own_movimientos" ON cr_movimientos;
+DROP POLICY IF EXISTS "cliente_select_own_operaciones" ON operaciones_cliente;
+DROP POLICY IF EXISTS "cliente_select_own_notificaciones" ON notificaciones;
+DROP POLICY IF EXISTS "cliente_update_own_notificaciones" ON notificaciones;
+
+-- ASESOR
+DROP POLICY IF EXISTS "asesor_select_own_cartera" ON cartera_diaria;
+DROP POLICY IF EXISTS "asesor_update_own_cartera" ON cartera_diaria;
+DROP POLICY IF EXISTS "asesor_insert_own_visitas" ON visitas_cliente;
+DROP POLICY IF EXISTS "asesor_select_own_visitas" ON visitas_cliente;
+DROP POLICY IF EXISTS "asesor_select_own_solicitudes" ON solicitudes_credito;
+DROP POLICY IF EXISTS "asesor_update_own_solicitudes" ON solicitudes_credito;
+DROP POLICY IF EXISTS "asesor_insert_own_documentos" ON solicitudes_documentos;
+DROP POLICY IF EXISTS "asesor_select_own_documentos" ON solicitudes_documentos;
+DROP POLICY IF EXISTS "asesor_insert_own_buro" ON consultas_buro;
+
+-- SUPERVISOR
+DROP POLICY IF EXISTS "supervisor_select_solicitudes" ON solicitudes_credito;
+DROP POLICY IF EXISTS "supervisor_update_solicitudes" ON solicitudes_credito;
+DROP POLICY IF EXISTS "supervisor_select_cartera" ON cartera_diaria;
+
+-- PUBLIC
+DROP POLICY IF EXISTS "public_read_agencias" ON agencias;
+DROP POLICY IF EXISTS "public_read_productos" ON productos_credito;
+
+-- ============================================================
 -- HABILITAR RLS EN TODAS LAS TABLAS
 -- ============================================================
 
