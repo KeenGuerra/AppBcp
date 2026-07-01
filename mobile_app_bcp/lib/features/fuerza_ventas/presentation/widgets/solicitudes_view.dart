@@ -62,7 +62,7 @@ class _SolicitudesViewState extends State<SolicitudesView> {
       filtered = filtered.where((s) {
         final est = (s['estado'] ?? '').toString().toUpperCase();
         if (_activeFilter == 'APROBADOS') return est == 'APROBADO' || est == 'DESEMBOLSADO';
-        if (_activeFilter == 'PENDIENTES') return est == 'EN_EVALUACION' || est == 'BORRADOR';
+        if (_activeFilter == 'PENDIENTES') return est == 'EN_EVALUACION' || est == 'BORRADOR' || est == 'ENVIADO';
         if (_activeFilter == 'COMITE') return est == 'ENVIADO' || est == 'RECIBIDO_COMITE';
         if (_activeFilter == 'RECHAZADOS') return est == 'RECHAZADO';
         return true;
@@ -266,7 +266,7 @@ class _SolicitudesViewState extends State<SolicitudesView> {
 
     final isPreevaluated = resultPreeval.isNotEmpty;
     final isBuroChecked = resultBuro.isNotEmpty;
-    final canSubmitToCommittee = (estado == 'BORRADOR' || estado == 'EN_EVALUACION') && isPreevaluated;
+    final canSubmitToCommittee = (estado == 'BORRADOR' || estado == 'EN_EVALUACION' || estado == 'ENVIADO') && isPreevaluated;
 
     final String fechaStr = s['created_at'] != null 
         ? DateFormat('dd/MM/yyyy HH:mm').format(DateTime.parse(s['created_at']))
@@ -362,7 +362,7 @@ class _SolicitudesViewState extends State<SolicitudesView> {
           ),
 
           // Analysis Pills
-          if (estado == 'BORRADOR' || estado == 'EN_EVALUACION') ...[
+          if (estado == 'BORRADOR' || estado == 'EN_EVALUACION' || estado == 'ENVIADO') ...[
             const SizedBox(height: 16),
             Row(
               children: [
@@ -384,7 +384,7 @@ class _SolicitudesViewState extends State<SolicitudesView> {
           ],
 
           // Actions
-          if (widget.isOnline && (estado == 'BORRADOR' || estado == 'EN_EVALUACION')) ...[
+          if (widget.isOnline && (estado == 'BORRADOR' || estado == 'EN_EVALUACION' || estado == 'ENVIADO')) ...[
             const SizedBox(height: 16),
             Row(
               children: [

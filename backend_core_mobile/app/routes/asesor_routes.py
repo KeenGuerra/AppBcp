@@ -115,8 +115,8 @@ def enviar_comite(id_solicitud: uuid.UUID, current_user: Usuario = Depends(get_a
     if not sol or sol.id_asesor != ase.id_asesor:
         raise HTTPException(status_code=404, detail="Solicitud no encontrada")
         
-    if sol.estado not in ["BORRADOR", "EN_EVALUACION"]:
-        raise HTTPException(status_code=400, detail="La solicitud debe estar en estado borrador o en evaluación para enviarse a comité")
+    if sol.estado not in ["BORRADOR", "EN_EVALUACION", "ENVIADO"]:
+        raise HTTPException(status_code=400, detail="La solicitud debe estar en estado borrador, en evaluación o enviada para enviarse a comité")
 
     # Auto preevaluate if not done yet
     if not sol.resultado_preevaluacion:

@@ -34,6 +34,7 @@ def consultar_buro(db: Session, id_solicitud: uuid.UUID) -> Dict[str, Any]:
     if not solicitud:
         raise NotFoundException("Solicitud de crédito")
 
+    _ = solicitud.cliente
     doc = solicitud.cliente.documento
     last_char = doc[-1] if doc else "0"
     last_digit = int(last_char) if last_char.isdigit() else 0

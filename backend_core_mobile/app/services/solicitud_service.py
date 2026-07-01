@@ -278,7 +278,9 @@ def preevaluar_solicitud_asesor(db: Session, id_solicitud: uuid.UUID) -> dict:
     if not sol:
         raise HTTPException(status_code=404, detail="Solicitud no encontrada")
 
-    # Fetch business financial numbers
+    # Fetch business financial numbers - eagerly load negocio
+    _ = sol.negocio
+    _ = sol.cliente
     negocio = sol.negocio
     if not negocio:
         raise HTTPException(status_code=400, detail="El cliente no registra datos de negocio")
