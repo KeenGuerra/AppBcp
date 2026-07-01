@@ -12,6 +12,7 @@ def get_cliente_by_usuario_id(db: Session, id_usuario: uuid.UUID):
     cli = cliente_repository.get_cliente_by_usuario_id(db, id_usuario)
     if not cli:
         raise NotFoundException("Cliente")
+    _ = cli.negocios
     return cli
 
 def get_ficha_cliente(db: Session, id_cliente: uuid.UUID):

@@ -302,6 +302,15 @@ class _ClienteDashboardScreenState extends ConsumerState<ClienteDashboardScreen>
 
   void _enviarSolicitud() async {
     if (_perfil == null) return;
+
+    final monto = double.tryParse(_montoController.text) ?? 0;
+    if (monto <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ingrese un monto válido mayor a S/ 0'), behavior: SnackBarBehavior.floating),
+      );
+      return;
+    }
+
     if (mounted) setState(() => _isLoading = true);
     try {
       final resProd = await DioClient.instance.get('/admin/productos-creditos');
@@ -311,11 +320,17 @@ class _ClienteDashboardScreenState extends ConsumerState<ClienteDashboardScreen>
       }
       final prodId = listProd[0]['id_producto_credito'];
 
+      final negocios = _perfil!['negocios'] as List<dynamic>? ?? [];
+      final idNegocio = negocios.isNotEmpty ? negocios[0]['id_negocio'] : null;
+      if (idNegocio == null) {
+        throw 'No se encontró un negocio registrado para este cliente';
+      }
+
       await DioClient.instance.post('/cliente/solicitudes', data: {
         'id_cliente': _perfil!['id_cliente'],
-        'id_negocio': _perfil!['negocios'][0]['id_negocio'],
+        'id_negocio': idNegocio,
         'id_producto_credito': prodId,
-        'monto_solicitado': double.tryParse(_montoController.text) ?? 0.0,
+        'monto_solicitado': monto,
         'plazo_meses': int.tryParse(_plazoController.text) ?? 12,
         'con_seguro_desgravamen': true,
         'garantia': _garantiaController.text,
@@ -336,7 +351,18 @@ class _ClienteDashboardScreenState extends ConsumerState<ClienteDashboardScreen>
       if (e is DioException && (e.response?.statusCode == 401 || e.response?.statusCode == 403)) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al enviar solicitud: $e'), behavior: SnackBarBehavior.floating));
+      String msg = 'Error al enviar solicitud';
+      if (e is DioException && e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map && data.containsKey('detail')) {
+          msg = data['detail'];
+        } else {
+          msg = '$data';
+        }
+      } else {
+        msg = 'Error al enviar solicitud: $e';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

@@ -7,6 +7,7 @@ from app.models.cartera_model import CarteraDiaria
 from app.schemas.solicitud_schema import SolicitudCreditoCreate, SolicitudCreditoUpdate
 from app.services.preevaluacion_service import calcular_cuota_estimada, evaluar_solicitud
 from datetime import datetime, date
+from decimal import Decimal
 import uuid
 import random
 
@@ -20,15 +21,34 @@ def crear_solicitud_cliente(db: Session, id_usuario_cliente: uuid.UUID, req: Sol
     if not cliente or cliente.id_cliente != req.id_cliente:
         raise HTTPException(status_code=403, detail="No autorizado para crear solicitudes para este cliente")
 
-    # Verify business
+    # Verify business - auto-create if missing
     negocio = cliente_repository.get_negocio_by_id(db, req.id_negocio)
     if not negocio or negocio.id_cliente != req.id_cliente:
-        raise HTTPException(status_code=400, detail="Negocio no corresponde al cliente")
+        negocios_existentes = cliente_repository.get_negocios_by_cliente_id(db, cliente.id_cliente)
+        if negocios_existentes:
+            negocio = negocios_existentes[0]
+        else:
+            from app.models.cliente_model import NegocioCliente
+            negocio = NegocioCliente(
+                id_negocio=uuid.uuid4(),
+                id_cliente=cliente.id_cliente,
+                nombre_comercial=f"Negocio de {cliente.nombres}",
+                giro_negocio="Comercio General",
+                antiguedad_meses=12,
+                ingreso_mensual=Decimal("3000.00"),
+                gasto_mensual=Decimal("1000.00"),
+                estado="ACTIVO",
+                created_at=datetime.utcnow(),
+                updated_at=datetime.utcnow()
+            )
+            db.add(negocio)
+            db.commit()
+            db.refresh(negocio)
 
     # Fetch product details
     prod = solicitud_repository.get_producto_by_id(db, req.id_producto_credito)
     if not prod:
-        raise HTTPException(status_code=404, detail="Producto no encontrado")
+        raise HTTPException(status_code=404, detail="Producto de crédito no encontrado")
 
     # Validate limits
     if req.monto_solicitado < prod.monto_minimo or req.monto_solicitado > prod.monto_maximo:

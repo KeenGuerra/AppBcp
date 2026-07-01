@@ -1035,10 +1035,14 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
 
     if (_isOnline) {
       try {
+        final resProd = await DioClient.instance.get('/admin/productos-creditos');
+        final listProd = resProd.data as List;
+        final prodId = listProd.isNotEmpty ? listProd[0]['id_producto_credito'] : 'f0000000-0000-0000-0000-000000000001';
+
         final resDraft = await DioClient.instance.post('/fventas/solicitudes', data: {
           'id_cliente': _stepperClientId ?? 'b0000000-0000-0000-0000-000000000001',
           'id_negocio': _stepperNegocioId ?? 'b0000000-0000-0000-0000-000000000001',
-          'id_producto_credito': 'f0000000-0000-0000-0000-000000000001',
+          'id_producto_credito': prodId,
           'monto_solicitado': double.tryParse(_stepperMontoController.text) ?? 5000.0,
           'plazo_meses': int.tryParse(_stepperPlazoController.text) ?? 12,
           'con_seguro_desgravamen': true,
