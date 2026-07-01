@@ -33,8 +33,16 @@ def aprobar_solicitud(db: Session, id_solicitud: uuid.UUID, monto_aprobado: Opti
     sol = solicitud_repository.get_solicitud_by_id(db, id_solicitud)
     if not sol:
         raise HTTPException(status_code=404, detail="Solicitud no encontrada")
-    # Must be in evaluation, or comite received
-    if sol.estado not in ["EN_EVALUACION", "RECIBIDO_COMITE", "CONDICIONADO"]:
+    # Auto-receive and evaluate if needed
+    if sol.estado in ["ENVIADO", "BORRADOR"]:
+        sol.estado = "RECIBIDO_COMITE"
+        db.commit()
+        db.refresh(sol)
+    if sol.estado == "RECIBIDO_COMITE":
+        sol.estado = "EN_EVALUACION"
+        db.commit()
+        db.refresh(sol)
+    if sol.estado not in ["EN_EVALUACION", "CONDICIONADO"]:
         raise HTTPException(status_code=400, detail="La solicitud debe estar en evaluación del comité")
     sol.estado = "APROBADO"
     sol.monto_aprobado = monto_aprobado or sol.monto_solicitado
@@ -47,7 +55,15 @@ def condicionar_solicitud(db: Session, id_solicitud: uuid.UUID, condicion: str) 
     sol = solicitud_repository.get_solicitud_by_id(db, id_solicitud)
     if not sol:
         raise HTTPException(status_code=404, detail="Solicitud no encontrada")
-    if sol.estado not in ["EN_EVALUACION", "RECIBIDO_COMITE"]:
+    if sol.estado in ["ENVIADO", "BORRADOR"]:
+        sol.estado = "RECIBIDO_COMITE"
+        db.commit()
+        db.refresh(sol)
+    if sol.estado == "RECIBIDO_COMITE":
+        sol.estado = "EN_EVALUACION"
+        db.commit()
+        db.refresh(sol)
+    if sol.estado not in ["EN_EVALUACION"]:
         raise HTTPException(status_code=400, detail="La solicitud debe estar en evaluación del comité")
     sol.estado = "CONDICIONADO"
     sol.condicion_adicional = condicion
@@ -59,7 +75,15 @@ def rechazar_solicitud(db: Session, id_solicitud: uuid.UUID, motivo: str) -> Sol
     sol = solicitud_repository.get_solicitud_by_id(db, id_solicitud)
     if not sol:
         raise HTTPException(status_code=404, detail="Solicitud no encontrada")
-    if sol.estado not in ["EN_EVALUACION", "RECIBIDO_COMITE", "CONDICIONADO"]:
+    if sol.estado in ["ENVIADO", "BORRADOR"]:
+        sol.estado = "RECIBIDO_COMITE"
+        db.commit()
+        db.refresh(sol)
+    if sol.estado == "RECIBIDO_COMITE":
+        sol.estado = "EN_EVALUACION"
+        db.commit()
+        db.refresh(sol)
+    if sol.estado not in ["EN_EVALUACION", "CONDICIONADO"]:
         raise HTTPException(status_code=400, detail="La solicitud debe estar en evaluación del comité")
     sol.estado = "RECHAZADO"
     sol.motivo_rechazo = motivo
