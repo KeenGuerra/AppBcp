@@ -1052,6 +1052,10 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
 
         _stepperSolId = resDraft.data['id_solicitud'];
         
+        try {
+          await DioClient.instance.post('/fventas/solicitudes/$_stepperSolId/preevaluar');
+        } catch (_) {}
+
         final bytes = await _sigController.toPngBytes();
         if (bytes != null) {
           final base64Sig = base64Encode(bytes);
@@ -1234,6 +1238,48 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
     debugPrint("Abandono registrado: Motivo: $motivo, Competencia: $institucion");
   }
 
+  Future<void> _registrarVisitaDesdeFicha(String idCartera, String resultado, String observacion) async {
+    if (mounted) setState(() => _isLoading = true);
+    try {
+      if (_isOnline) {
+        await DioClient.instance.post('/fventas/visitas', data: {
+          'id_cartera': idCartera,
+          'resultado': resultado,
+          'observacion': observacion,
+          'lat': -12.0463,
+          'lng': -77.0427,
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Visita registrada correctamente'), behavior: SnackBarBehavior.floating),
+        );
+      } else {
+        final db = await LocalDatabase.database;
+        await db.insert('local_visitas_pendientes', {
+          'id_visita': _generateUuid(),
+          'id_cartera': idCartera,
+          'id_asesor': 'b0000000-0000-0000-0000-000000000001',
+          'id_cliente': _stepperClientId ?? 'c0000000-0000-0000-0000-000000000001',
+          'resultado': resultado,
+          'observacion': observacion,
+          'lat': -12.0463,
+          'lng': -77.0427,
+          'fecha_hora': DateTime.now().toIso8601String(),
+          'pendiente_sync': 1,
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Visita guardada offline'), behavior: SnackBarBehavior.floating),
+        );
+      }
+      _loadInitialData();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al registrar visita: $e'), behavior: SnackBarBehavior.floating),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   String _generateUuid() {
     final random = Random();
     final hex = List.generate(256, (i) => i.toRadixString(16).padLeft(2, '0'));
@@ -1350,6 +1396,7 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
       case 2:
         return FichaView(
           stepperClientId: _stepperClientId,
+          selectedIdCartera: _selectedIdCartera,
           selectedFicha: _selectedFicha,
           onUsePreapprovedOffer: (monto, plazo) {
             _stepperMontoController.text = monto.round().toString();
@@ -1360,6 +1407,7 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
             setState(() => _selectedMenuIndex = 4); 
           },
           onUpdateGps: _actualizarUbicacionNegocio,
+          onRegistrarVisita: _registrarVisitaDesdeFicha,
         );
       case 3:
         return PreevaluacionCampanaView(

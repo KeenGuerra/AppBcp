@@ -81,6 +81,37 @@ def get_notificaciones(current_user: Usuario = Depends(get_client), db: Session 
         for n in notifs
     ]
 
+@router.get("/negocios")
+def get_negocios(current_user: Usuario = Depends(get_client), db: Session = Depends(get_db)):
+    cli = cliente_service.get_cliente_by_usuario_id(db, current_user.id_usuario)
+    from app.models.cliente_model import NegocioCliente
+    negocios = db.query(NegocioCliente).filter(NegocioCliente.id_cliente == cli.id_cliente).all()
+    return [
+        {
+            "id_negocio": str(n.id_negocio),
+            "nombre_comercial": n.nombre_comercial,
+            "giro_negocio": n.giro_negocio,
+            "ingreso_mensual": float(n.ingreso_mensual) if n.ingreso_mensual else 0.0,
+            "gasto_mensual": float(n.gasto_mensual) if n.gasto_mensual else 0.0,
+        }
+        for n in negocios
+    ]
+
+@router.get("/productos-credito")
+def get_productos_credito(current_user: Usuario = Depends(get_client), db: Session = Depends(get_db)):
+    from app.repositories import solicitud_repository
+    productos = solicitud_repository.get_productos(db)
+    return [
+        {
+            "id_producto_credito": str(p.id_producto_credito),
+            "codigo": p.codigo,
+            "nombre": p.nombre,
+            "monto_minimo": float(p.monto_minimo),
+            "monto_maximo": float(p.monto_maximo),
+        }
+        for p in productos
+    ]
+
 @router.post("/solicitudes", response_model=SolicitudCreditoResponse)
 def crear_solicitud(req: SolicitudCreditoCreate, current_user: Usuario = Depends(get_client), db: Session = Depends(get_db)):
     return solicitud_service.crear_solicitud_cliente(db, current_user.id_usuario, req)

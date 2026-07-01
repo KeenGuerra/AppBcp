@@ -70,6 +70,16 @@ class ApiRepository {
     return response.data;
   }
 
+  Future<List<dynamic>> getNegocios(String idCliente) async {
+    final response = await _dio.get('/cliente/negocios');
+    return response.data;
+  }
+
+  Future<List<dynamic>> getProductosCredito() async {
+    final response = await _dio.get('/cliente/productos-credito');
+    return response.data;
+  }
+
   Future<void> transferir(Map<String, dynamic> data) async {
     await _dio.post('/cliente/operaciones/transferencia', data: data);
   }
@@ -116,12 +126,15 @@ class ApiRepository {
     return response.data;
   }
 
-  Future<void> aprobarSolicitud(String idSolicitud) async {
-    await _dio.post('/comite/solicitudes/$idSolicitud/aprobar');
+  Future<void> aprobarSolicitud(String idSolicitud, {double? montoAprobado, String? condicionAdicional}) async {
+    await _dio.post('/comite/solicitudes/$idSolicitud/aprobar', data: {
+      if (montoAprobado != null) 'monto_aprobado': montoAprobado,
+      if (condicionAdicional != null) 'condicion_adicional': condicionAdicional,
+    });
   }
 
   Future<void> rechazarSolicitud(String idSolicitud, String motivo) async {
-    await _dio.post('/comite/solicitudes/$idSolicitud/rechazar', data: {'motivo': motivo});
+    await _dio.post('/comite/solicitudes/$idSolicitud/rechazar', data: {'motivo_rechazo': motivo});
   }
 
   Future<void> desembolsar(String idSolicitud) async {

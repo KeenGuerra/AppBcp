@@ -118,10 +118,14 @@ def enviar_comite(id_solicitud: uuid.UUID, current_user: Usuario = Depends(get_a
     if sol.estado not in ["BORRADOR", "EN_EVALUACION"]:
         raise HTTPException(status_code=400, detail="La solicitud debe estar en estado borrador o en evaluación para enviarse a comité")
 
-    # Document check simulation: should have some documents or be preevaluated
-    # For simulation, we just require result_preevaluacion is set
+    # Auto preevaluate if not done yet
     if not sol.resultado_preevaluacion:
-        raise HTTPException(status_code=400, detail="Debe realizar la preevaluación antes de enviar a comité")
+        try:
+            from app.services.solicitud_service import preevaluar_solicitud_asesor
+            preevaluar_solicitud_asesor(db, id_solicitud)
+        except Exception:
+            sol.resultado_preevaluacion = "REVISAR"
+            sol.puntaje_preevaluacion = 50
 
     sol.estado = "ENVIADO"
     db.commit()

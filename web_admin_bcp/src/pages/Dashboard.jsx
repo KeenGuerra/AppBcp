@@ -19,19 +19,21 @@ export default function Dashboard({ api, setPage }) {
   const [coreStats, setCoreStats] = useState({ usuarios: 0, productos: 0, outbox: 0, successRate: '—' });
   const [bankingStats, setBankingStats] = useState(null);
   const [recentOps, setRecentOps] = useState([]);
+  const [solicitudesCount, setSolicitudesCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [serverOk, setServerOk] = useState(false);
 
   const fetchAll = async (isSilent = false) => {
     if (!isSilent) setLoading(true);
     try {
-      const [rUsers, rProds, rOutbox, rLogs, rBanking, rRecent] = await Promise.allSettled([
+      const [rUsers, rProds, rOutbox, rLogs, rBanking, rRecent, rSols] = await Promise.allSettled([
         api.get('/admin/usuarios'),
         api.get('/admin/productos-creditos'),
         api.get('/sync/outbox'),
         api.get('/sync/log'),
         api.get('/banking/admin/stats'),
         api.get('/banking/admin/transacciones?limit=5'),
+        api.get('/supervisor/solicitudes'),
       ]);
 
       if (rUsers.status === 'fulfilled') {
@@ -53,6 +55,10 @@ export default function Dashboard({ api, setPage }) {
 
       if (rRecent.status === 'fulfilled') {
         setRecentOps(rRecent.value.data);
+      }
+
+      if (rSols.status === 'fulfilled') {
+        setSolicitudesCount(rSols.value.data.length);
       }
     } catch (e) {
       console.error(e);
@@ -148,7 +154,7 @@ export default function Dashboard({ api, setPage }) {
               { label: 'Recargas', val: bankingStats.totales.recargas, monto: null, icon: 'smartphone', color: '#FF6B00', page: 'transacciones' },
               { label: 'Préstamos', val: bankingStats.totales.prestamos, monto: null, icon: 'account_balance', color: '#7FB3E0', page: 'prestamos' },
               { label: 'Ahorros', val: bankingStats.totales.ahorros, monto: null, icon: 'savings', color: '#F6C90E', page: 'ahorros' },
-              { label: 'Solicitudes', val: null, monto: null, icon: 'pending_actions', color: '#E53E3E', page: 'prestamos' },
+              { label: 'Solicitudes', val: solicitudesCount, monto: null, icon: 'pending_actions', color: '#E53E3E', page: 'solicitudes_admin' },
             ].map((item, i) => (
               <div
                 key={i}

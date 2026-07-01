@@ -5,16 +5,20 @@ import '../theme/fuerza_ventas_theme.dart';
 
 class FichaView extends StatelessWidget {
   final String? stepperClientId;
+  final String? selectedIdCartera;
   final Map<String, dynamic>? selectedFicha;
   final Function(double monto, int plazo) onUsePreapprovedOffer;
   final Function(String clientId) onUpdateGps;
+  final Future<void> Function(String idCartera, String resultado, String observacion)? onRegistrarVisita;
 
   const FichaView({
     super.key,
     required this.stepperClientId,
+    this.selectedIdCartera,
     required this.selectedFicha,
     required this.onUsePreapprovedOffer,
     required this.onUpdateGps,
+    this.onRegistrarVisita,
   });
 
   Color _sbsColor(String? sbs) {
@@ -274,7 +278,36 @@ class FichaView extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 24),
-          
+
+          // Registrar Visita button
+          if (onRegistrarVisita != null && selectedIdCartera != null) ...[
+            SizedBox(
+              width: double.infinity,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [FuerzaVentasTheme.neonGreen, FuerzaVentasTheme.neonGreen.withOpacity(0.7)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: () => _showVisitaDialog(context),
+                  icon: const Icon(Icons.check_circle_outline, color: Colors.white),
+                  label: const Text('Registrar Visita', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 15)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
           // Action button (GPS)
           SizedBox(
             width: double.infinity,
@@ -378,6 +411,81 @@ class FichaView extends StatelessWidget {
     return const Padding(
       padding: EdgeInsets.symmetric(horizontal: 20),
       child: Divider(color: Colors.white10, height: 1),
+    );
+  }
+
+  void _showVisitaDialog(BuildContext context) {
+    String resultado = 'Contacto efectivo';
+    final obsController = TextEditingController(text: 'Visita de cortesía realizada');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: FuerzaVentasTheme.cardDark,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Colors.white10),
+        ),
+        title: const Text('Registrar Visita', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Resultado de la visita:', style: TextStyle(color: Colors.white60)),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildResultadoChip(ctx, resultado, 'Contacto efectivo', (v) => resultado = v),
+                  _buildResultadoChip(ctx, resultado, 'No encontrado', (v) => resultado = v),
+                  _buildResultadoChip(ctx, resultado, 'Reprogramar', (v) => resultado = v),
+                  _buildResultadoChip(ctx, resultado, 'Cliente no desea', (v) => resultado = v),
+                ],
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: obsController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Observaciones',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.white24)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: FuerzaVentasTheme.neonCyan)),
+                ),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancelar', style: TextStyle(color: Colors.white60))),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              onRegistrarVisita?.call(selectedIdCartera!, resultado, obsController.text);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: FuerzaVentasTheme.neonGreen),
+            child: const Text('Confirmar Visita'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultadoChip(BuildContext context, String current, String label, Function(String) onSelected) {
+    final isSelected = current == label;
+    return ChoiceChip(
+      label: Text(label, style: TextStyle(color: isSelected ? Colors.white : Colors.white60, fontSize: 12)),
+      selected: isSelected,
+      selectedColor: FuerzaVentasTheme.bcpOrange,
+      backgroundColor: Colors.white.withOpacity(0.06),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: isSelected ? FuerzaVentasTheme.bcpOrange : Colors.white12),
+      ),
+      onSelected: (_) => onSelected(label),
     );
   }
 }

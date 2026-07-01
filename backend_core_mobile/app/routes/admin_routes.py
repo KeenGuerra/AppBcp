@@ -143,6 +143,47 @@ def get_clientes(current_user: Usuario = Depends(get_admin), db: Session = Depen
 def get_asesores(current_user: Usuario = Depends(get_admin), db: Session = Depends(get_db)):
     return asesor_repository.get_asesores(db)
 
+@router.get("/creditos")
+def get_creditos_admin(current_user: Usuario = Depends(get_admin), db: Session = Depends(get_db)):
+    from app.models.credito_model import Credito
+    creditos = db.query(Credito).all()
+    result = []
+    for c in creditos:
+        result.append({
+            "id_credito": str(c.id_credito),
+            "numero_credito": c.numero_credito,
+            "id_cliente": str(c.id_cliente),
+            "id_solicitud": str(c.id_solicitud) if c.id_solicitud else None,
+            "monto_desembolsado": float(c.monto_desembolsado) if c.monto_desembolsado else 0.0,
+            "tasa_interes": float(c.tasa_interes) if c.tasa_interes else 0.0,
+            "plazo_meses": c.plazo_meses,
+            "saldo_capital": float(c.saldo_capital) if c.saldo_capital else 0.0,
+            "cuota_mensual": float(c.cuota_mensual) if c.cuota_mensual else 0.0,
+            "estado": c.estado,
+            "fecha_desembolso": c.fecha_desembolso.isoformat() if hasattr(c.fecha_desembolso, 'isoformat') else str(c.fecha_desembolso) if c.fecha_desembolso else None,
+        })
+    return result
+
+@router.get("/creditos/{id_credito}/cronograma")
+def get_cronograma_admin(id_credito: uuid.UUID, current_user: Usuario = Depends(get_admin), db: Session = Depends(get_db)):
+    from app.models.cronograma_model import CronogramaPago
+    pagos = db.query(CronogramaPago).filter(CronogramaPago.id_credito == id_credito).order_by(CronogramaPago.numero_cuota).all()
+    return [
+        {
+            "id_pago": str(p.id_pago),
+            "id_credito": str(p.id_credito),
+            "numero_cuota": p.numero_cuota,
+            "fecha_pago": p.fecha_pago.isoformat() if hasattr(p.fecha_pago, 'isoformat') else str(p.fecha_pago) if p.fecha_pago else None,
+            "monto_cuota": float(p.monto_cuota) if p.monto_cuota else 0.0,
+            "capital": float(p.capital) if p.capital else 0.0,
+            "interes": float(p.interes) if p.interes else 0.0,
+            "seguro_desgravamen": float(p.seguro_desgravamen) if p.seguro_desgravamen else 0.0,
+            "monto_pagado": float(p.monto_pagado) if p.monto_pagado else 0.0,
+            "estado": p.estado,
+        }
+        for p in pagos
+    ]
+
 @router.get("/productos-creditos", response_model=List[ProductoCreditoResponse])
 def get_productos(current_user: Usuario = Depends(get_current_user), db: Session = Depends(get_db)):
     return solicitud_repository.get_productos(db)

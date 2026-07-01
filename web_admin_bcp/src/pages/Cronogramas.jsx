@@ -26,7 +26,7 @@ export default function Cronogramas({ api }) {
     setSelectedCredito(credito);
     setLoadingCronograma(true);
     try {
-      const response = await api.get(`/cliente/creditos/${credito.id_credito}/cronograma`);
+      const response = await api.get(`/admin/creditos/${credito.id_credito}/cronograma`);
       setCronograma(response.data);
     } catch (err) {
       setError('Error al obtener cronograma.');

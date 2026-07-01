@@ -44,13 +44,13 @@ def crear_solicitud_cliente(db: Session, id_usuario_cliente: uuid.UUID, req: Sol
     ).all()
 
     if asesores_agencia:
-        asesor_asignado = random.choice(asesores_agencia)
+        asesor_asignado = asesores_agencia[0]
     else:
         # Fallback to any advisor
         all_asesores = db.query(asesor_repository.Asesor).filter(asesor_repository.Asesor.estado == "ACTIVO").all()
         if not all_asesores:
             raise HTTPException(status_code=500, detail="No hay asesores activos disponibles en el sistema")
-        asesor_asignado = random.choice(all_asesores)
+        asesor_asignado = all_asesores[0]
 
     # 3. Calculate initial cuota estimación
     tea = prod.tea_con_seguro if req.con_seguro_desgravamen else prod.tea_sin_seguro
