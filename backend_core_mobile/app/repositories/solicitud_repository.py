@@ -7,6 +7,14 @@ import uuid
 def get_solicitud_by_id(db: Session, id_solicitud: uuid.UUID) -> Optional[SolicitudCredito]:
     return db.query(SolicitudCredito).filter(SolicitudCredito.id_solicitud == id_solicitud).first()
 
+def get_solicitud_by_id_with_relations(db: Session, id_solicitud: uuid.UUID) -> Optional[SolicitudCredito]:
+    """Get solicitud with eagerly loaded producto and cliente relationships"""
+    result = db.query(SolicitudCredito).filter(SolicitudCredito.id_solicitud == id_solicitud).first()
+    if result:
+        _ = result.producto
+        _ = result.cliente
+    return result
+
 def get_solicitudes_by_cliente_id(db: Session, id_cliente: uuid.UUID) -> List[SolicitudCredito]:
     return db.query(SolicitudCredito).filter(SolicitudCredito.id_cliente == id_cliente).all()
 

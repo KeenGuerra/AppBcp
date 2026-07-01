@@ -16,12 +16,18 @@ import random
 import math
 
 def desembolsar_solicitud(db: Session, id_solicitud: uuid.UUID) -> Credito:
-    # 1. Validate request state
-    sol = solicitud_repository.get_solicitud_by_id(db, id_solicitud)
+    # 1. Validate request state - eagerly load producto and cliente
+    sol = solicitud_repository.get_solicitud_by_id_with_relations(db, id_solicitud)
     if not sol:
         raise HTTPException(status_code=404, detail="Solicitud no encontrada")
     if sol.estado != "APROBADO":
         raise HTTPException(status_code=400, detail="La solicitud debe estar aprobada para ser desembolsada")
+    
+    # Ensure related objects are loaded (avoid lazy loading issues)
+    if not sol.producto:
+        raise HTTPException(status_code=400, detail="Producto de crédito no encontrado para esta solicitud")
+    if not sol.cliente:
+        raise HTTPException(status_code=400, detail="Cliente no encontrado para esta solicitud")
 
     # 2. Get client accounts
     cuentas = cuenta_repository.get_cuentas_by_cliente_id(db, sol.id_cliente)
