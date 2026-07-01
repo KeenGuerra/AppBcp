@@ -40,7 +40,7 @@ def evaluar_solicitud(id_solicitud: uuid.UUID, current_user: Usuario = Depends(g
 
 @router.post("/solicitudes/{id_solicitud}/aprobar", response_model=SolicitudCreditoResponse)
 def aprobar_solicitud(id_solicitud: uuid.UUID, req: ComiteDecisionRequest, current_user: Usuario = Depends(get_comite_user), db: Session = Depends(get_db)):
-    return comite_service.aprobar_solicitud(db, id_solicitud, req.monto_approved if hasattr(req, 'monto_approved') else req.monto_aprobado, req.condicion_adicional)
+    return comite_service.aprobar_solicitud(db, id_solicitud, req.monto_aprobado, req.condicion_adicional)
 
 @router.post("/solicitudes/{id_solicitud}/condicionar", response_model=SolicitudCreditoResponse)
 def condicionar_solicitud(id_solicitud: uuid.UUID, req: ComiteDecisionRequest, current_user: Usuario = Depends(get_comite_user), db: Session = Depends(get_db)):

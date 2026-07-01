@@ -59,6 +59,7 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
         if (mounted) context.go('/login');
         return;
       }
+      debugPrint('Error fetching data: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -235,9 +236,20 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
     try {
       await DioClient.instance.post('/comite/solicitudes/$idSol/recibir');
       await DioClient.instance.post('/comite/solicitudes/$idSol/evaluar');
-      _fetchData();
+      await _fetchData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Solicitud recibida y en evaluación'), backgroundColor: AppConstants.exitoGreen),
+        );
+      }
     } catch (e) {
-      debugPrint('Error recibir comite: $e');
+      final msg = e is DioException ? (e.response?.data?.toString() ?? e.message ?? 'Error desconocido') : e.toString();
+      debugPrint('Error recibir comite: $msg');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $msg'), backgroundColor: AppConstants.errorRed),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -255,7 +267,7 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: montoController, decoration: const InputDecoration(labelText: 'Monto Aprobado (S/)')),
+            TextField(controller: montoController, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Monto Aprobado (S/)')),
             const SizedBox(height: 12),
             TextField(controller: condController, decoration: const InputDecoration(labelText: 'Condición adicional (Opcional)')),
           ],
@@ -270,11 +282,22 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
               try {
                 await DioClient.instance.post('/comite/solicitudes/$idSol/aprobar', data: {
                   'monto_aprobado': double.tryParse(montoController.text) ?? 0.0,
-                  'condicion_adicional': condController.text
+                  'condicion_adicional': condController.text.isEmpty ? null : condController.text,
                 });
-                _fetchData();
+                await _fetchData();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Crédito aprobado correctamente'), backgroundColor: AppConstants.exitoGreen),
+                  );
+                }
               } catch (e) {
-                debugPrint('Error aprobar: $e');
+                final msg = e is DioException ? (e.response?.data?.toString() ?? e.message ?? 'Error desconocido') : e.toString();
+                debugPrint('Error aprobar: $msg');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al aprobar: $msg'), backgroundColor: AppConstants.errorRed),
+                  );
+                }
               } finally {
                 if (mounted) setState(() => _isLoading = false);
               }
@@ -307,9 +330,20 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
                 await DioClient.instance.post('/comite/solicitudes/$idSol/rechazar', data: {
                   'motivo_rechazo': motController.text
                 });
-                _fetchData();
+                await _fetchData();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Crédito rechazado'), backgroundColor: AppConstants.errorRed),
+                  );
+                }
               } catch (e) {
-                debugPrint('Error rechazar: $e');
+                final msg = e is DioException ? (e.response?.data?.toString() ?? e.message ?? 'Error desconocido') : e.toString();
+                debugPrint('Error rechazar: $msg');
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al rechazar: $msg'), backgroundColor: AppConstants.errorRed),
+                  );
+                }
               } finally {
                 if (mounted) setState(() => _isLoading = false);
               }
@@ -383,13 +417,40 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
   }
 
   void _desembolsarCredito(String idSol) async {
-    if (!mounted) return;
+    final confirmado = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirmar Desembolso'),
+        content: const Text('¿Está seguro de desembolsar este crédito? El monto será acreditado a la cuenta del cliente.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(backgroundColor: AppConstants.orangeAcento),
+            child: const Text('Confirmar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmado != true || !mounted) return;
+
     setState(() => _isLoading = true);
     try {
       await DioClient.instance.post('/comite/solicitudes/$idSol/desembolsar');
-      _fetchData();
+      await _fetchData();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Crédito desembolsado y cuenta acreditada correctamente'), backgroundColor: AppConstants.exitoGreen),
+        );
+      }
     } catch (e) {
-      debugPrint('Error desembolsar: $e');
+      final msg = e is DioException ? (e.response?.data?.toString() ?? e.message ?? 'Error desconocido') : e.toString();
+      debugPrint('Error desembolsar: $msg');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al desembolsar: $msg'), backgroundColor: AppConstants.errorRed),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

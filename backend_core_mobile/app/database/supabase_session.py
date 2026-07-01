@@ -547,7 +547,8 @@ class SupabaseSession:
         self._deleted_objects.clear()
 
         if errors:
-            logger.warning(f"Errores en commit: {errors}")
+            logger.error(f"Errores en commit: {errors}")
+            raise Exception(f"Error en base de datos: {'; '.join(errors)}")
 
     def refresh(self, obj):
         """Recarga un objeto desde Supabase"""
