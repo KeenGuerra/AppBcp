@@ -118,8 +118,8 @@ def desembolsar_solicitud(db: Session, id_solicitud: uuid.UUID) -> Credito:
     cronograma_repository.create_cuotas(db, cuotas)
 
     # 5. Credit Customer's Savings Account
-    cta_destino.saldo_disponible += monto_des
-    cta_destino.saldo_contable += monto_des
+    cta_destino.saldo_disponible = Decimal(str(cta_destino.saldo_disponible or 0)) + monto_des
+    cta_destino.saldo_contable = Decimal(str(cta_destino.saldo_contable or 0)) + monto_des
     db.commit()
 
     # 6. Create disbursement transaction log
