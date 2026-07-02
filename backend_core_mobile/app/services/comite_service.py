@@ -7,15 +7,24 @@ from typing import Optional
 from decimal import Decimal
 import uuid
 
+def _eager_load_solicitud(sol: SolicitudCredito):
+    """Eagerly load relationships to avoid lazy loading failures during serialization"""
+    _ = sol.cliente
+    _ = sol.negocio
+    _ = sol.producto
+    if sol.cliente:
+        _ = sol.cliente.negocios
+
 def recibir_solicitud(db: Session, id_solicitud: uuid.UUID) -> SolicitudCredito:
     sol = solicitud_repository.get_solicitud_by_id(db, id_solicitud)
     if not sol:
         raise HTTPException(status_code=404, detail="Solicitud no encontrada")
-    if sol.estado not in ["ENVIADO", "BORRADOR"]: # wait, usually from ENVIADO
+    if sol.estado not in ["ENVIADO", "BORRADOR"]:
         raise HTTPException(status_code=400, detail="La solicitud debe estar en estado ENVIADO")
     sol.estado = "RECIBIDO_COMITE"
     db.commit()
     db.refresh(sol)
+    _eager_load_solicitud(sol)
     return sol
 
 def evaluar_solicitud(db: Session, id_solicitud: uuid.UUID) -> SolicitudCredito:
@@ -27,6 +36,7 @@ def evaluar_solicitud(db: Session, id_solicitud: uuid.UUID) -> SolicitudCredito:
     sol.estado = "EN_EVALUACION"
     db.commit()
     db.refresh(sol)
+    _eager_load_solicitud(sol)
     return sol
 
 def aprobar_solicitud(db: Session, id_solicitud: uuid.UUID, monto_aprobado: Optional[Decimal] = None, condicion: Optional[str] = None) -> SolicitudCredito:
@@ -49,6 +59,7 @@ def aprobar_solicitud(db: Session, id_solicitud: uuid.UUID, monto_aprobado: Opti
     sol.condicion_adicional = condicion
     db.commit()
     db.refresh(sol)
+    _eager_load_solicitud(sol)
     return sol
 
 def condicionar_solicitud(db: Session, id_solicitud: uuid.UUID, condicion: str) -> SolicitudCredito:
@@ -69,6 +80,7 @@ def condicionar_solicitud(db: Session, id_solicitud: uuid.UUID, condicion: str) 
     sol.condicion_adicional = condicion
     db.commit()
     db.refresh(sol)
+    _eager_load_solicitud(sol)
     return sol
 
 def rechazar_solicitud(db: Session, id_solicitud: uuid.UUID, motivo: str) -> SolicitudCredito:
@@ -89,4 +101,5 @@ def rechazar_solicitud(db: Session, id_solicitud: uuid.UUID, motivo: str) -> Sol
     sol.motivo_rechazo = motivo
     db.commit()
     db.refresh(sol)
+    _eager_load_solicitud(sol)
     return sol

@@ -36,14 +36,19 @@ def desembolsar_solicitud(db: Session, id_solicitud: uuid.UUID) -> Credito:
     cta_destino = cuentas[0] # Deposit into their first savings account
 
     monto_des = Decimal(str(sol.monto_aprobado or sol.monto_solicitado))
+    if monto_des <= 0:
+        raise HTTPException(status_code=400, detail="El monto aprobado debe ser mayor a cero")
 
     # 3. Create credit record
     num_credito = f"CRE-{random.randint(10000000, 99999999)}"
-    tea_f = float(sol.tea_referencial) / 100.0
+    tea_val = sol.tea_referencial
+    if not tea_val or tea_val <= 0:
+        raise HTTPException(status_code=400, detail="La TEA referencial de la solicitud es inválida")
+    tea_f = float(tea_val) / 100.0
     tem_f = math.pow(1.0 + tea_f, 1.0 / 12.0) - 1.0
     tem_dec = Decimal(str(round(tem_f, 6)))
 
-    cuota_mensual = calcular_cuota_estimada(monto_des, sol.tea_referencial, sol.plazo_meses)
+    cuota_mensual = calcular_cuota_estimada(monto_des, tea_val, sol.plazo_meses)
 
     credito = Credito(
         id_credito=uuid.uuid4(),
@@ -137,14 +142,15 @@ def desembolsar_solicitud(db: Session, id_solicitud: uuid.UUID) -> Credito:
     sol.estado = "DESEMBOLSADO"
     db.commit()
 
-    # 8. Dispatch notification
-    crear_notificacion_automatica(
-        db, 
-        id_usuario=sol.cliente.id_usuario,
-        titulo="Crédito Desembolsado",
-        mensaje=f"Tu crédito {num_credito} por S/ {monto_des} ha sido desembolsado exitosamente en tu cuenta {cta_destino.numero_cuenta}.",
-        tipo="CREDITO_DESEMBOLSADO"
-    )
+    # 8. Dispatch notification (skip if client has no linked usuario)
+    if sol.cliente.id_usuario:
+        crear_notificacion_automatica(
+            db, 
+            id_usuario=sol.cliente.id_usuario,
+            titulo="Crédito Desembolsado",
+            mensaje=f"Tu crédito {num_credito} por S/ {monto_des} ha sido desembolsado exitosamente en tu cuenta {cta_destino.numero_cuenta}.",
+            tipo="CREDITO_DESEMBOLSADO"
+        )
 
     # 9. Register sync_outbox & sync_log
     encolar_evento_sync(
@@ -155,4 +161,6 @@ def desembolsar_solicitud(db: Session, id_solicitud: uuid.UUID) -> Credito:
         payload={"numero_credito": num_credito, "monto": float(monto_des), "cuenta_deposito": cta_destino.numero_cuenta}
     )
 
+    # Refresh credito to ensure all fields are populated
+    db.refresh(credito)
     return credito
