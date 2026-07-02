@@ -92,9 +92,11 @@ class StepperView extends StatelessWidget {
   }
 
   Widget _buildStepperForm(BuildContext context) {
+    const steps = ['Solicitante', 'Negocio', 'Crédito', 'Firma'];
+    const stepIcons = [Icons.person_outline, Icons.store_outlined, Icons.monetization_on_outlined, Icons.draw_outlined];
+
     return Column(
       children: [
-        // Top options actions
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
@@ -134,334 +136,327 @@ class StepperView extends StatelessWidget {
             ],
           ),
         ),
+        // Step indicator
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: List.generate(steps.length, (i) {
+              final isActive = currentStep >= i;
+              final isCurrent = currentStep == i;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => onStepChanged(i),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isActive ? FuerzaVentasTheme.bcpOrange : Colors.white10,
+                          border: Border.all(
+                            color: isCurrent ? FuerzaVentasTheme.neonCyan : (isActive ? FuerzaVentasTheme.bcpOrange : Colors.white24),
+                            width: isCurrent ? 2.5 : 1.5,
+                          ),
+                        ),
+                        child: Center(
+                          child: currentStep > i
+                              ? const Icon(Icons.check, color: Colors.white, size: 18)
+                              : Icon(stepIcons[i], color: Colors.white, size: 18),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        steps[i],
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                          color: isActive ? Colors.white : Colors.white38,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+        const SizedBox(height: 4),
+        // Step content
         Expanded(
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              colorScheme: const ColorScheme.dark(
-                primary: FuerzaVentasTheme.neonCyan,
-                onPrimary: Colors.black,
-                secondary: FuerzaVentasTheme.bcpOrange,
-                surface: FuerzaVentasTheme.cardDark,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: _buildStepContent(context),
+          ),
+        ),
+        // Navigation buttons
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              if (currentStep > 0)
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => onStepChanged(currentStep - 1),
+                    icon: const Icon(Icons.arrow_back, size: 18),
+                    label: const Text('Atrás', style: TextStyle(fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white70,
+                      side: const BorderSide(color: Colors.white24),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+              if (currentStep > 0) const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: currentStep < 3 ? () => onStepChanged(currentStep + 1) : onSubmit,
+                  icon: Icon(currentStep < 3 ? Icons.arrow_forward : Icons.send, size: 18),
+                  label: Text(currentStep < 3 ? 'Siguiente' : 'Enviar al Comité', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: currentStep < 3 ? FuerzaVentasTheme.bcpBlue : FuerzaVentasTheme.bcpOrange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
               ),
-            ),
-            child: Stepper(
-              type: StepperType.vertical,
-              currentStep: currentStep,
-              onStepTapped: onStepChanged,
-              onStepCancel: () {
-                if (currentStep > 0) {
-                  onStepChanged(currentStep - 1);
-                }
-              },
-              onStepContinue: () {
-                if (currentStep < 3) {
-                  onStepChanged(currentStep + 1);
-                }
-              },
-              steps: [
-                Step(
-                  title: const Text(
-                    'Paso 1: Solicitante',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  isActive: currentStep >= 0,
-                  state: currentStep > 0 ? StepState.complete : StepState.editing,
-                  content: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: FuerzaVentasTheme.glassDecoration(opacity: 0.3),
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: nameController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Nombre Completo',
-                            labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.person_outline, color: FuerzaVentasTheme.neonCyan),
-                            filled: true,
-                            fillColor: FuerzaVentasTheme.inputFieldColor,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: docController,
-                          style: const TextStyle(color: Colors.white),
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Documento DNI',
-                            labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.badge_outlined, color: FuerzaVentasTheme.neonCyan),
-                            filled: true,
-                            fillColor: FuerzaVentasTheme.inputFieldColor,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        DropdownButtonFormField<String>(
-                          dropdownColor: FuerzaVentasTheme.cardDark,
-                          decoration: InputDecoration(
-                            labelText: 'Estado Civil',
-                            labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.favorite_outline, color: FuerzaVentasTheme.neonCyan),
-                            filled: true,
-                            fillColor: FuerzaVentasTheme.inputFieldColor,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                          style: const TextStyle(color: Colors.white),
-                          value: stepperEstadoCivil,
-                          items: ['SOLTERO', 'CASADO', 'CONVIVIENTE', 'DIVORCIADO'].map((e) {
-                            return DropdownMenuItem(value: e, child: Text(e));
-                          }).toList(),
-                          onChanged: (val) {
-                            if (val != null) onEstadoCivilChanged(val);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Step(
-                  title: const Text(
-                    'Paso 2: Datos del Negocio',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  isActive: currentStep >= 1,
-                  state: currentStep > 1 ? StepState.complete : (currentStep == 1 ? StepState.editing : StepState.disabled),
-                  content: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: FuerzaVentasTheme.glassDecoration(opacity: 0.3),
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: incomeController,
-                          style: const TextStyle(color: Colors.white),
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Ingresos Mensuales Estimados (S/)',
-                            labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.trending_up_outlined, color: FuerzaVentasTheme.neonCyan),
-                            filled: true,
-                            fillColor: FuerzaVentasTheme.inputFieldColor,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: expenseController,
-                          style: const TextStyle(color: Colors.white),
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Gastos Mensuales Estimados (S/)',
-                            labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.trending_down_outlined, color: FuerzaVentasTheme.neonCyan),
-                            filled: true,
-                            fillColor: FuerzaVentasTheme.inputFieldColor,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: destinoController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            labelText: 'Destino del Crédito',
-                            labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.business_center_outlined, color: FuerzaVentasTheme.neonCyan),
-                            filled: true,
-                            fillColor: FuerzaVentasTheme.inputFieldColor,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Step(
-                  title: const Text(
-                    'Paso 3: Condiciones del Crédito',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  isActive: currentStep >= 2,
-                  state: currentStep > 2 ? StepState.complete : (currentStep == 2 ? StepState.editing : StepState.disabled),
-                  content: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: FuerzaVentasTheme.glassDecoration(opacity: 0.3),
-                    child: Column(
-                      children: [
-                        TextFormField(
-                          controller: montoController,
-                          style: const TextStyle(color: Colors.white),
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Monto Solicitado (S/)',
-                            labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.monetization_on_outlined, color: FuerzaVentasTheme.neonCyan),
-                            filled: true,
-                            fillColor: FuerzaVentasTheme.inputFieldColor,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextFormField(
-                          controller: plazoController,
-                          style: const TextStyle(color: Colors.white),
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Plazo en meses',
-                            labelStyle: const TextStyle(color: Colors.white60),
-                            prefixIcon: const Icon(Icons.calendar_today_outlined, color: FuerzaVentasTheme.neonCyan),
-                            filled: true,
-                            fillColor: FuerzaVentasTheme.inputFieldColor,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _mostrarSimulacionFrancesa(context),
-                            icon: const Icon(Icons.calculate_outlined),
-                            label: const Text('Simular Amortización Francesa', style: TextStyle(fontWeight: FontWeight.bold)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: FuerzaVentasTheme.bcpBlue,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Step(
-                  title: const Text(
-                    'Paso 4: Conformidad y Firma',
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  isActive: currentStep >= 3,
-                  state: currentStep == 3 ? StepState.editing : StepState.disabled,
-                  content: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: FuerzaVentasTheme.glassDecoration(opacity: 0.3),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Document upload
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: Icon(
-                            Icons.camera_alt_outlined,
-                            color: dniUploaded ? FuerzaVentasTheme.neonGreen : Colors.white60,
-                            size: 26,
-                          ),
-                          title: const Text(
-                            'Foto DNI (Blur Check)',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                          subtitle: Text(
-                            dniUploaded ? 'Fotografía Aprobada ✓' : 'Capturar fotografía para procesar nitidez',
-                            style: TextStyle(color: dniUploaded ? FuerzaVentasTheme.neonGreen : Colors.white38, fontSize: 12),
-                          ),
-                          trailing: ElevatedButton(
-                            onPressed: onSimulateFoto,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: FuerzaVentasTheme.inputFieldColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: const Text('Capturar'),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Firma táctil digital:',
-                          style: TextStyle(color: Colors.white70, fontSize: 13.5, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          height: MediaQuery.of(context).size.height * 0.18,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white24, width: 1.5),
-                            borderRadius: BorderRadius.circular(16),
-                            color: Colors.white,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(14),
-                            child: Signature(
-                              controller: sigController,
-                              backgroundColor: Colors.white,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            TextButton.icon(
-                              onPressed: () => sigController.clear(),
-                              icon: const Icon(Icons.clear, color: FuerzaVentasTheme.neonRed, size: 18),
-                              label: const Text('Borrar Firma', style: TextStyle(color: FuerzaVentasTheme.neonRed, fontWeight: FontWeight.bold, fontSize: 12)),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: FuerzaVentasTheme.bcpOrangeGradient,
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: FuerzaVentasTheme.neonGlowShadow(color: FuerzaVentasTheme.bcpOrange, opacity: 0.25),
-                            ),
-                            child: ElevatedButton(
-                              onPressed: onSubmit,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                shadowColor: Colors.transparent,
-                                surfaceTintColor: Colors.transparent,
-                                elevation: 0,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                              ),
-                              child: const Text('Enviar al Comité', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildStepContent(BuildContext context) {
+    switch (currentStep) {
+      case 0:
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: FuerzaVentasTheme.glassDecoration(opacity: 0.3),
+          child: Column(
+            children: [
+              TextFormField(
+                controller: nameController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Nombre Completo',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  prefixIcon: const Icon(Icons.person_outline, color: FuerzaVentasTheme.neonCyan),
+                  filled: true,
+                  fillColor: FuerzaVentasTheme.inputFieldColor,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: docController,
+                style: const TextStyle(color: Colors.white),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Documento DNI',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  prefixIcon: const Icon(Icons.badge_outlined, color: FuerzaVentasTheme.neonCyan),
+                  filled: true,
+                  fillColor: FuerzaVentasTheme.inputFieldColor,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<String>(
+                dropdownColor: FuerzaVentasTheme.cardDark,
+                decoration: InputDecoration(
+                  labelText: 'Estado Civil',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  prefixIcon: const Icon(Icons.favorite_outline, color: FuerzaVentasTheme.neonCyan),
+                  filled: true,
+                  fillColor: FuerzaVentasTheme.inputFieldColor,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+                style: const TextStyle(color: Colors.white),
+                value: stepperEstadoCivil,
+                items: ['SOLTERO', 'CASADO', 'CONVIVIENTE', 'DIVORCIADO'].map((e) {
+                  return DropdownMenuItem(value: e, child: Text(e));
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) onEstadoCivilChanged(val);
+                },
+              ),
+            ],
+          ),
+        );
+      case 1:
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: FuerzaVentasTheme.glassDecoration(opacity: 0.3),
+          child: Column(
+            children: [
+              TextFormField(
+                controller: incomeController,
+                style: const TextStyle(color: Colors.white),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Ingresos Mensuales Estimados (S/)',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  prefixIcon: const Icon(Icons.trending_up_outlined, color: FuerzaVentasTheme.neonCyan),
+                  filled: true,
+                  fillColor: FuerzaVentasTheme.inputFieldColor,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: expenseController,
+                style: const TextStyle(color: Colors.white),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Gastos Mensuales Estimados (S/)',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  prefixIcon: const Icon(Icons.trending_down_outlined, color: FuerzaVentasTheme.neonCyan),
+                  filled: true,
+                  fillColor: FuerzaVentasTheme.inputFieldColor,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: destinoController,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Destino del Crédito',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  prefixIcon: const Icon(Icons.business_center_outlined, color: FuerzaVentasTheme.neonCyan),
+                  filled: true,
+                  fillColor: FuerzaVentasTheme.inputFieldColor,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+            ],
+          ),
+        );
+      case 2:
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: FuerzaVentasTheme.glassDecoration(opacity: 0.3),
+          child: Column(
+            children: [
+              TextFormField(
+                controller: montoController,
+                style: const TextStyle(color: Colors.white),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Monto Solicitado (S/)',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  prefixIcon: const Icon(Icons.monetization_on_outlined, color: FuerzaVentasTheme.neonCyan),
+                  filled: true,
+                  fillColor: FuerzaVentasTheme.inputFieldColor,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: plazoController,
+                style: const TextStyle(color: Colors.white),
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Plazo en meses',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  prefixIcon: const Icon(Icons.calendar_today_outlined, color: FuerzaVentasTheme.neonCyan),
+                  filled: true,
+                  fillColor: FuerzaVentasTheme.inputFieldColor,
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => _mostrarSimulacionFrancesa(context),
+                  icon: const Icon(Icons.calculate_outlined),
+                  label: const Text('Simular Amortización Francesa', style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FuerzaVentasTheme.bcpBlue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      case 3:
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: FuerzaVentasTheme.glassDecoration(opacity: 0.3),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(
+                  Icons.camera_alt_outlined,
+                  color: dniUploaded ? FuerzaVentasTheme.neonGreen : Colors.white60,
+                  size: 26,
+                ),
+                title: const Text(
+                  'Foto DNI (Blur Check)',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+                subtitle: Text(
+                  dniUploaded ? 'Fotografía Aprobada ✓' : 'Capturar fotografía para procesar nitidez',
+                  style: TextStyle(color: dniUploaded ? FuerzaVentasTheme.neonGreen : Colors.white38, fontSize: 12),
+                ),
+                trailing: ElevatedButton(
+                  onPressed: onSimulateFoto,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: FuerzaVentasTheme.inputFieldColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('Capturar'),
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Firma táctil digital:',
+                style: TextStyle(color: Colors.white70, fontSize: 13.5, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: MediaQuery.of(context).size.height * 0.18,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.white24, width: 1.5),
+                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Signature(
+                    controller: sigController,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton.icon(
+                    onPressed: () => sigController.clear(),
+                    icon: const Icon(Icons.clear, color: FuerzaVentasTheme.neonRed, size: 18),
+                    label: const Text('Borrar Firma', style: TextStyle(color: FuerzaVentasTheme.neonRed, fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   void _mostrarSimulacionFrancesa(BuildContext context) {
