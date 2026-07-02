@@ -125,4 +125,52 @@ El modelo de datos relacional asegura la integridad transaccional mediante llave
 * **`sync_outbox` / `sync_log`**: Cola transaccional para el mantenimiento del flujo offline-first y la auditoría de eventos de sincronización del Core.
 
 ---
+
+## 6. TASAS DE INTERÉS Y FÓRMULAS FINANCIERAS
+
+El sistema gestiona tanto operaciones activas (créditos) como pasivas (ahorros/depósitos a plazo) aplicando las siguientes tasas y metodologías de cálculo financiero:
+
+### 6.1. Tasas de Interés Aplicadas por Producto
+
+1. **Crédito Empresarial Microempresa:**
+   * **TEA con Seguro de Desgravamen:** 40.92% (Tasa Efectiva Anual)
+   * **TEA sin Seguro de Desgravamen:** 43.90% (según base de datos demo / referenciado como 43.92% en documentación técnica)
+2. **Crédito Consumo Personal:**
+   * **TEA con Seguro de Desgravamen:** 45.00%
+   * **TEA sin Seguro de Desgravamen:** 42.00%
+3. **Depósito a Plazo Fijo (Ahorro):**
+   * **Plazo 30 días:** 3.00% (TEA)
+   * **Plazo 60 días:** 4.00% (TEA)
+   * **Plazo 90 días:** 5.00% (TEA)
+   * **Plazo 180 días:** 6.50% (TEA)
+   * **Plazo 360 días:** 8.00% (TEA)
+
+### 6.2. Metodología de Créditos (Sistema de Amortización Francesa)
+
+Las cuotas estimadas de preevaluación y los cronogramas reales generados en el desembolso emplean las siguientes fórmulas matemáticas:
+
+* **Conversión de TEA a TEM (Tasa Efectiva Mensual):**
+  $$TEM = (1 + TEA)^{1/12} - 1$$
+  *Fórmula en código Python:* `tem_f = math.pow(1.0 + tea_f, 1.0 / 12.0) - 1.0`
+
+* **Cálculo de Cuota Mensual Constante (Método Francés):**
+  $$Cuota = \frac{Monto \times TEM}{1 - (1 + TEM)^{-Plazo}}$$
+  *Fórmula en código Python:* `cuota_f = (monto_f * tem_f) / (1.0 - math.pow(1.0 + tem_f, -plazo_meses))`
+
+* **Desglose de cada Cuota (Amortización mensual):**
+  * **Interés del periodo:** $Interés = SaldoActual \times TEM$
+  * **Amortización de Capital:** $Capital = Cuota - Interés$
+  * **Nuevo Saldo Pendiente:** $SaldoNuevo = SaldoActual - Capital$
+
+### 6.3. Metodología de Depósitos a Plazo Fijo (Interés Simple)
+
+Para los depósitos a plazo fijo, el cálculo de intereses al vencimiento se efectúa mediante la siguiente relación:
+
+* **Interés Estimado al Vencimiento:**
+  $$Interés = Monto \times \left(\frac{Tasa}{100}\right) \times \left(\frac{PlazoDías}{365}\right)$$
+
+* **Monto Total a Recibir:**
+  $$MontoFinal = Monto + Interés$$
+
+---
 *Fin del documento de documentación del sistema.*
