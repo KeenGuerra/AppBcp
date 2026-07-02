@@ -56,7 +56,14 @@ def rechazar_solicitud(id_solicitud: uuid.UUID, req: ComiteDecisionRequest, curr
 
 @router.post("/solicitudes/{id_solicitud}/desembolsar", response_model=CreditoResponse)
 def desembolsar_solicitud(id_solicitud: uuid.UUID, current_user: Usuario = Depends(get_comite_user), db: Session = Depends(get_db)):
-    return desembolso_service.desembolsar_solicitud(db, id_solicitud)
+    try:
+        return desembolso_service.desembolsar_solicitud(db, id_solicitud)
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error al desembolsar: {str(e)}")
 
 @router.get("/productividad")
 def get_productividad(current_user: Usuario = Depends(get_comite_user), db: Session = Depends(get_db)):
