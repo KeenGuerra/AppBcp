@@ -7,6 +7,7 @@ import 'package:mobile_app_bcp/core/utils/money_formatter.dart';
 import 'package:mobile_app_bcp/core/network/dio_client.dart';
 import 'package:dio/dio.dart';
 import 'package:mobile_app_bcp/features/auth/presentation/providers/auth_provider.dart';
+import 'package:mobile_app_bcp/features/cliente_homebanking/presentation/widgets/bcp_logo.dart';
 import 'dart:convert';
 
 class SupervisorDashboardScreen extends ConsumerStatefulWidget {
@@ -79,7 +80,13 @@ class _SupervisorDashboardScreenState extends ConsumerState<SupervisorDashboardS
     });
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Comité y Supervisión BCP'),
+        title: Row(
+          children: [
+            const BcpLogo(fontSize: 12, paddingHorizontal: 8, paddingVertical: 4),
+            const SizedBox(width: 10),
+            const Expanded(child: Text('Comité y Supervisión BCP')),
+          ],
+        ),
         actions: [
           IconButton(icon: const Icon(Icons.refresh), onPressed: _isLoading ? null : _fetchData),
           IconButton(icon: const Icon(Icons.exit_to_app), onPressed: _logout),

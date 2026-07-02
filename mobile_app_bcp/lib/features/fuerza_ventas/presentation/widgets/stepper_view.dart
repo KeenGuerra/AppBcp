@@ -60,11 +60,9 @@ class StepperView extends StatelessWidget {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: 3,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Container(
+      child: Column(
+        children: [
+          Container(
             color: FuerzaVentasTheme.cardDark.withOpacity(0.5),
             child: const TabBar(
               dividerColor: Colors.white10,
@@ -79,14 +77,16 @@ class StepperView extends StatelessWidget {
               ],
             ),
           ),
-        ),
-        body: TabBarView(
-          children: [
-            _buildStepperForm(context),
-            _buildDraftsPanel(context),
-            _buildQuickSimulator(context),
-          ],
-        ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                _buildStepperForm(context),
+                _buildDraftsPanel(context),
+                _buildQuickSimulator(context),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -405,7 +405,7 @@ class StepperView extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Container(
-                          height: 140,
+                          height: MediaQuery.of(context).size.height * 0.18,
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.white24, width: 1.5),
                             borderRadius: BorderRadius.circular(16),

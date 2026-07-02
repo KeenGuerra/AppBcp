@@ -8,6 +8,7 @@ import 'package:mobile_app_bcp/core/network/connectivity_service.dart';
 import 'package:mobile_app_bcp/core/storage/local_database.dart';
 import 'package:mobile_app_bcp/core/storage/local_draft_service.dart';
 import 'package:mobile_app_bcp/features/auth/presentation/providers/auth_provider.dart';
+import 'package:mobile_app_bcp/features/cliente_homebanking/presentation/widgets/bcp_logo.dart';
 import 'package:signature/signature.dart';
 import 'package:sqflite/sqflite.dart';
 import 'dart:convert';
@@ -1540,14 +1541,22 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           iconTheme: const IconThemeData(color: Colors.white),
-          title: Text(
-            'Fuerza de Ventas BCP - ${userRole.toUpperCase()}',
-            style: const TextStyle(
-              color: Colors.white, 
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              letterSpacing: 0.5,
-            ),
+          title: Row(
+            children: [
+              const BcpLogo(fontSize: 11, paddingHorizontal: 7, paddingVertical: 3),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Fuerza de Ventas - ${userRole.toUpperCase()}',
+                  style: const TextStyle(
+                    color: Colors.white, 
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
           ),
           actions: [
             // Notifications / Alert stack
@@ -1610,15 +1619,7 @@ class _AsesorDashboardScreenState extends ConsumerState<AsesorDashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: FuerzaVentasTheme.bcpBlue.withOpacity(0.3),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: FuerzaVentasTheme.neonCyan.withOpacity(0.4)),
-                      ),
-                      child: const Icon(Icons.account_circle_outlined, size: 48, color: Colors.white),
-                    ),
+                    const BcpLogo(isCircle: true, fontSize: 18, size: 56),
                     const SizedBox(height: 12),
                     Text(
                       userState.name ?? 'Asesor de Negocios', 
